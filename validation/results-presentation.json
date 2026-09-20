@@ -1,0 +1,32 @@
+{
+  "errors": [],
+  "checks": [
+    "Results are hidden before inference, then appear above inputs with automatic scroll/focus",
+    "Larger play controls preserve synchronized A/B playback",
+    "RMS normalization and balanced WAV downloads remain enabled",
+    "Inspect-routing link and TF layer buttons remain usable",
+    "Responsive results cards checked at 320/390/768/1000/1440px",
+    "Changing the interval hides stale results and clears old normalization"
+  ],
+  "loudness": {
+    "rms": [
+      0.09443293880698708,
+      0.09999999998537584,
+      0.09765624301766436
+    ],
+    "peak": [
+      0.949999988079071,
+      0.43963760137557983,
+      0.949999988079071
+    ],
+    "mixtureUnchanged": true,
+    "gain": [
+      24.637993883149132,
+      1.052767266065823,
+      1.8507824194684315
+    ]
+  },
+  "passed": true,
+  "modelSha256": "9a96c9769e2d403a8e81297a62abb26794c4ac266814ad24b1fdc6bdb7e7cb22",
+  "modelId": "uss-moe-large-event-last-12experts-ema-fp32-dynamic"
+}

@@ -1,0 +1,25 @@
+{
+  "isolated": false,
+  "timing": {
+    "loadMs": 16668.19999998808,
+    "preprocessMs": 359.6000000089407,
+    "inferenceMs": 92271.79999999702,
+    "postprocessMs": 753.7999999970198,
+    "totalMs": 110053.39999999106,
+    "rtf": 3.0757266666665672,
+    "threads": 1,
+    "warm": false,
+    "cacheUsed": false,
+    "modelBytes": 61989038
+  },
+  "lengths": [
+    480000,
+    480000,
+    480000,
+    480000
+  ],
+  "eventIdsMatch": true,
+  "frames": 1001,
+  "modelSha256": "9a96c9769e2d403a8e81297a62abb26794c4ac266814ad24b1fdc6bdb7e7cb22",
+  "passed": true
+}

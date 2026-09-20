@@ -1,0 +1,147 @@
+{
+  "cases": [
+    {
+      "seconds": 10,
+      "lengths": [
+        160000,
+        160000,
+        160000,
+        160000
+      ],
+      "max": 2.294778823852539e-06,
+      "snr": 108.3417007581345,
+      "tfMatch": true,
+      "eventsMatch": true,
+      "frames": 334,
+      "timing": {
+        "loadMs": 16272.370000004768,
+        "preprocessMs": 107.45000000298023,
+        "inferenceMs": 9833.559999987483,
+        "postprocessMs": 300.61500000953674,
+        "totalMs": 26513.99500000477,
+        "rtf": 0.9833559999987483,
+        "threads": 4,
+        "warm": false,
+        "cacheUsed": false,
+        "modelBytes": 61989038
+      }
+    },
+    {
+      "seconds": 3,
+      "lengths": [
+        48000,
+        48000,
+        48000,
+        48000
+      ],
+      "max": 2.980232238769531e-07,
+      "snr": 124.49762855390847,
+      "tfMatch": true,
+      "eventsMatch": true,
+      "frames": 101,
+      "timing": {
+        "loadMs": 0.015000000596046448,
+        "preprocessMs": 24.519999995827675,
+        "inferenceMs": 2162.8949999958277,
+        "postprocessMs": 88.43999999761581,
+        "totalMs": 2275.869999989867,
+        "rtf": 0.7209649999986092,
+        "threads": 4,
+        "warm": true,
+        "cacheUsed": false,
+        "modelBytes": 61989038
+      }
+    },
+    {
+      "seconds": 6,
+      "lengths": [
+        96000,
+        96000,
+        96000,
+        96000
+      ],
+      "max": 1.1473894119262695e-06,
+      "snr": 116.70714251965991,
+      "tfMatch": true,
+      "eventsMatch": true,
+      "frames": 201,
+      "timing": {
+        "loadMs": 0.005000010132789612,
+        "preprocessMs": 80.75,
+        "inferenceMs": 5834.089999988675,
+        "postprocessMs": 203.45499999821186,
+        "totalMs": 6118.29999999702,
+        "rtf": 0.9723483333314459,
+        "threads": 4,
+        "warm": true,
+        "cacheUsed": false,
+        "modelBytes": 61989038
+      }
+    },
+    {
+      "seconds": 7.13,
+      "lengths": [
+        114080,
+        114080,
+        114080,
+        114080
+      ],
+      "max": 8.046627044677734e-07,
+      "snr": 116.66232085785208,
+      "tfMatch": true,
+      "eventsMatch": true,
+      "frames": 238,
+      "timing": {
+        "loadMs": 0.004999995231628418,
+        "preprocessMs": 89.5,
+        "inferenceMs": 6344.745000004768,
+        "postprocessMs": 288.05500000715256,
+        "totalMs": 6722.305000007153,
+        "rtf": 0.8898660589066997,
+        "threads": 4,
+        "warm": true,
+        "cacheUsed": false,
+        "modelBytes": 61989038
+      }
+    },
+    {
+      "seconds": 30,
+      "lengths": [
+        480000,
+        480000,
+        480000,
+        480000
+      ],
+      "max": 9.417533874511719e-06,
+      "snr": 98.47120719148043,
+      "tfMatch": true,
+      "eventsMatch": true,
+      "frames": 1001,
+      "timing": {
+        "loadMs": 0.01000000536441803,
+        "preprocessMs": 357.9099999964237,
+        "inferenceMs": 37660.70999999344,
+        "postprocessMs": 757.7800000011921,
+        "totalMs": 38776.409999996424,
+        "rtf": 1.2553569999997813,
+        "threads": 4,
+        "warm": true,
+        "cacheUsed": false,
+        "modelBytes": 61989038
+      }
+    }
+  ],
+  "checks": [
+    "Both sliders enforce the 3-second minimum and reset stale results",
+    "Reject uploads shorter than 3s or longer than 30s without losing previous input",
+    "30s WAV download retains exact length",
+    "No horizontal overflow at 320, 390, 1000 and 1440px",
+    "Short recording rejection, valid recording, full-length default and inference",
+    "Cancel returns both range controls to usable state",
+    "12 event columns / 14 modules, 7 TF layer buttons, 100 frequency bands, and 24 TF legend colors"
+  ],
+  "errors": [],
+  "passed": true,
+  "modelSha256": "9a96c9769e2d403a8e81297a62abb26794c4ac266814ad24b1fdc6bdb7e7cb22",
+  "modelId": "uss-moe-large-event-last-12experts-ema-fp32-dynamic"
+}
