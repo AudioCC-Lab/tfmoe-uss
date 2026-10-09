@@ -1,4 +1,4 @@
-"""Export the same EMA model with a dynamic frame axis (3-30 s)."""
+"""Export the original checkpoint model with a dynamic frame axis (3-30 s)."""
 import argparse,copy,hashlib,json,sys,time,types
 from pathlib import Path
 import numpy as np
@@ -27,14 +27,41 @@ def main():
     conformer.xops=None
     from baseline_code.models.TF_MOE import TF_MOE_SE
     with torch.serialization.safe_globals([(ConfigData,'baseline_code.config.Config')]): ckpt=torch.load(args.checkpoint,map_location='cpu',weights_only=True)
+    checkpoint_sha=hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()
     cfg=vars(ckpt['hyper_parameters']['cfg']);mc=cfg['model_configs'];print('CONFIG',json.dumps(mc), 'EPOCH',ckpt.get('epoch'),flush=True);original=TF_MOE_SE(**mc)
     assert mc['n_expert']==mc['event_num_experts']==12 and mc['num_spk']==3
     assert mc['n_fft']==960 and mc['hop_length']==480 and mc['target_fs']==16000
     original.load_state_dict({k.removeprefix('se_model.'):v for k,v in ckpt['state_dict'].items()},strict=True)
-    named=list(original.named_parameters());shadows=ckpt['ema']['shadow_params'];assert len(named)==len(shadows)
-    for (name,param),shadow in zip(named,shadows):
-        assert param.shape==shadow.shape,name
-        param.data.copy_(shadow)
+    named=list(original.named_parameters())
+    saved_average=ckpt.get('ema',{})
+    shadows=saved_average.get('shadow_params',[])
+    backup=saved_average.get('collected_params')
+    # Validation swaps averaged parameters into state_dict. store() preserves
+    # the unaveraged training parameters in collected_params for restore().
+    # Detect that case instead of silently relabelling averaged weights.
+    saved_during_validation=(len(named)==len(shadows) and all(torch.equal(p,q) for (_,p),q in zip(named,shadows)))
+    weight_source='state_dict'
+    replaced=0
+    if saved_during_validation:
+        if backup is None or len(backup)!=len(named):
+            raise RuntimeError('Original training parameters are unavailable in this checkpoint')
+        assert all(k.startswith('se_model.') for k in ckpt['state_dict'])
+        for (name,param),raw in zip(named,backup):
+            assert param.shape==raw.shape and torch.isfinite(raw).all(),name
+            replaced+=int(not torch.equal(param,raw))
+            param.data.copy_(raw)
+            assert torch.equal(param,raw),name
+        weight_source='training-parameter-backup'
+    parameter_hash=hashlib.sha256()
+    for name,param in named:
+        parameter_hash.update(name.encode())
+        parameter_hash.update(param.detach().contiguous().numpy().tobytes())
+    provenance={'source':weight_source,'parameterTensors':len(named),'restoredTensors':len(named) if saved_during_validation else 0,'changedTensors':replaced,'parametersSha256':parameter_hash.hexdigest()}
+    print('ORIGINAL WEIGHT PROVENANCE',json.dumps(provenance),flush=True)
+    parameter_count=sum(p.numel() for p in original.se.parameters())
+    assert parameter_count==sum(p.numel() for p in original.parameters())
+    # Count the inference model once, excluding checkpoint training state.
+    print('ORIGINAL PARAMETERS',parameter_count,flush=True)
     original.eval();adapted=copy.deepcopy(original)
     adapted.se.melmask_decoder=PackedDecoder(adapted.se.melmask_decoder)
     for block in adapted.se.blocks:
@@ -47,14 +74,16 @@ def main():
         if hasattr(module,'cache_if_possible'):module.cache_if_possible=False
     core=ExportCore(adapted.se).eval();samples,sr=sf.read(args.audio,dtype='float32');assert sr==16000 and samples.ndim==1
     out=Path(args.output);out.mkdir(parents=True,exist_ok=True)
+    if (out/'uss-original.onnx').exists():
+        raise FileExistsError('Choose a new output directory; existing weights are never overwritten')
     def spec_of(wave):return torch.view_as_real(torch.stft(torch.from_numpy(wave)[None],n_fft=960,hop_length=480,window=torch.hann_window(960),return_complex=True).transpose(1,2)).contiguous()
     with torch.inference_mode():
         spec=spec_of(samples[:96000])
-        torch.onnx.export(core,(spec,),str(out/'uss.onnx'),input_names=['spectrum'],output_names=OUTPUT_NAMES,opset_version=17,dynamo=False,do_constant_folding=True,dynamic_axes={'spectrum':{1:'frames'},'separated_spectrum':{2:'frames'},'frame_selected':{1:'frames'},'frame_weight':{1:'frames'}})
-    onnx.checker.check_model(onnx.load(str(out/'uss.onnx')))
+        torch.onnx.export(core,(spec,),str(out/'uss-original.onnx'),input_names=['spectrum'],output_names=OUTPUT_NAMES,opset_version=17,dynamo=False,do_constant_folding=True,dynamic_axes={'spectrum':{1:'frames'},'separated_spectrum':{2:'frames'},'frame_selected':{1:'frames'},'frame_weight':{1:'frames'}})
+    onnx.checker.check_model(onnx.load(str(out/'uss-original.onnx')))
     opts=ort.SessionOptions();opts.intra_op_num_threads=2;opts.inter_op_num_threads=1;opts.graph_optimization_level=ort.GraphOptimizationLevel.ORT_DISABLE_ALL
-    session=ort.InferenceSession(str(out/'uss.onnx'),sess_options=opts,providers=['CPUExecutionProvider'])
-    report={'checkpointSha256':hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest(),'cases':[],'dynamicAxes':True,'attentionQueryTiles':8,'tolerances':{'spectralSnrDbMin':75,'eventProbabilityMaxAbs':1e-4,'tfReferenceProbabilityGapMax':1e-7},'modelConfig':mc,'checkpointEpoch':ckpt.get('epoch'),'checkpointStep':ckpt.get('global_step')}
+    session=ort.InferenceSession(str(out/'uss-original.onnx'),sess_options=opts,providers=['CPUExecutionProvider'])
+    report={'checkpointSha256':checkpoint_sha,'weightVariant':'original','weightProvenance':provenance,'parameterCount':parameter_count,'cases':[],'dynamicAxes':True,'attentionQueryTiles':8,'tolerances':{'spectralSnrDbMin':75,'eventProbabilityMaxAbs':1e-4,'tfReferenceProbabilityGapMax':1e-7},'modelConfig':mc,'checkpointEpoch':ckpt.get('epoch'),'checkpointStep':ckpt.get('global_step')}
     for duration,start in [(3,0),(6,0),(10,0),(7.13,1.17),(30,0)]:
         length=round(duration*sr);signal=np.tile(samples,4)[round(start*sr):round(start*sr)+length].copy();spec=spec_of(signal);events=[];tf_events=[]
         hooks=[]
@@ -93,7 +122,8 @@ def main():
         assert np.isfinite(wav).all()
         case={'seconds':duration,'start':start,'frames':n,'spectralError':metric,'eventProbabilityError':prob,'adaptedSpectralError':error(expected[0],reference),'adaptedEventProbabilityError':error(expected[1],torch.cat(events).numpy()),'eventIdsMatch':True,'tfIdsMatch':all(v['mismatches']==0 for v in tf_checks.values()),'tfRouteComparison':tf_checks,'runtimeSeconds':elapsed};report['cases'].append(case);print(json.dumps(case),flush=True)
         slug=str(duration).replace('.','p');signal.astype('<f4').tofile(out/f'input-{slug}.f32');wav.astype('<f4').tofile(out/f'output-{slug}.f32');(out/f'routes-{slug}.json').write_text(json.dumps({k:v.tolist() for k,v in zip(OUTPUT_NAMES[1:],actual[1:])}))
-    model=(out/'uss.onnx').read_bytes()
-    manifest={'schemaVersion':2,'modelId':'uss-moe-large-event-last-12experts-ema-fp32-dynamic','model':{'url':'uss.onnx','bytes':len(model),'sha256':hashlib.sha256(model).hexdigest()},'sampleRate':16000,'minSamples':48000,'maxSamples':480000,'fftSize':960,'hopLength':480,'window':'hann-periodic','center':True,'padMode':'reflect','input':{'name':'spectrum','shape':[1,'frames',481,2],'dtype':'float32'},'outputs':OUTPUT_NAMES,'layers':mc['num_layer'],'experts':mc['n_expert'],'eventExperts':mc['event_num_experts'],'tfExperts':mc['n_expert'],'sources':mc['num_spk'],'bands':mc['num_bands'],'channels':mc['num_channel'],'weightVariant':'EMA','sharedExperts':mc.get('n_shared_experts'),'useGroupNorm':mc.get('use_group_norm',False),'checkpointEpoch':ckpt.get('epoch'),'checkpointStep':ckpt.get('global_step'),'expertLabels':['English','Mandarin · AISHELL-1','Mandarin · AISHELL-3','Other speech','Singing / vocals','Other human sounds','Birds','Other animals','String instruments','Other music','Transport','Nature / other'],'modules':[f'L{i+1} {axis}' for i in range(mc['num_layer']) for axis in ('F','T')],'bandLowHz':original.se.melband_split.subband_freqs_low.tolist(),'bandHighHz':original.se.melband_split.subband_freqs_up.tolist(),'paddingPolicy':'No fixed-length zero padding; centered STFT reflect padding only','checkpointSha256':report['checkpointSha256'],'attentionQueryTiles':8}
+    assert hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()==checkpoint_sha, 'Checkpoint changed during export'
+    model=(out/'uss-original.onnx').read_bytes()
+    manifest={'schemaVersion':2,'modelId':'uss-moe-large-event-last-12experts-original-fp32-dynamic','model':{'url':'uss-original.onnx','bytes':len(model),'sha256':hashlib.sha256(model).hexdigest()},'sampleRate':16000,'minSamples':48000,'maxSamples':480000,'fftSize':960,'hopLength':480,'window':'hann-periodic','center':True,'padMode':'reflect','input':{'name':'spectrum','shape':[1,'frames',481,2],'dtype':'float32'},'outputs':OUTPUT_NAMES,'layers':mc['num_layer'],'experts':mc['n_expert'],'eventExperts':mc['event_num_experts'],'tfExperts':mc['n_expert'],'sources':mc['num_spk'],'bands':mc['num_bands'],'channels':mc['num_channel'],'weightVariant':'original','weightProvenance':provenance,'parameterCount':parameter_count,'parameterCountScope':'Inference model parameters; excludes training state and non-parameter buffers','sharedExperts':mc.get('n_shared_experts'),'useGroupNorm':mc.get('use_group_norm',False),'checkpointEpoch':ckpt.get('epoch'),'checkpointStep':ckpt.get('global_step'),'expertLabels':['English','Mandarin · AISHELL-1','Mandarin · AISHELL-3','Other speech','Singing / vocals','Other human sounds','Birds','Other animals','String instruments','Other music','Transport','Nature / other'],'modules':[f'L{i+1} {axis}' for i in range(mc['num_layer']) for axis in ('F','T')],'bandLowHz':original.se.melband_split.subband_freqs_low.tolist(),'bandHighHz':original.se.melband_split.subband_freqs_up.tolist(),'paddingPolicy':'No fixed-length zero padding; centered STFT reflect padding only','checkpointSha256':report['checkpointSha256'],'attentionQueryTiles':8}
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2));(out/'validation.json').write_text(json.dumps(report,indent=2));print('EXPORT COMPLETE',len(model),flush=True)
 if __name__=='__main__':main()

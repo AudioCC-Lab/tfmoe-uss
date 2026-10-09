@@ -5,7 +5,7 @@ Static, browser-only source separation for SJTU AudioCC Lab. Serve this director
 ## Current model
 
 - AudioCC checkpoint: `/exp/bohan.liu/urgent2026_challenge/exp/moe_large_event/last.ckpt`.
-- EMA weights, FP32 ONNX; 7 layers, 48 channels, 100 Mel bands, 3 sources.
+- Original checkpoint weights, FP32 ONNX; 7 layers, 48 channels, 100 Mel bands, 3 sources.
 - Each F/T module has 12 event experts (FFN1) and 12 TF experts (FFN2), top-1 routing. GroupNorm is enabled; this checkpoint has no shared expert branch.
 - 16 kHz audio, 960-point periodic Hann STFT, 480-sample hop. Dynamic 3-30-second input, processed in one pass.
 - `models/manifest.json` records checkpoint/model hashes, exact architecture and tensor contract. The worker checks the model SHA-256 and uses a hash-specific cache key.
@@ -47,14 +47,16 @@ python tools/export_model.py \
   --output /path/to/export-output
 ```
 
-The exporter reads the checkpoint configuration, strictly loads the weights, applies EMA, exports sparse top-1 expert dispatch and dynamic duration, and validates 3/6/10/7.13/30-second cases against the original model. Copy the verified `uss.onnx` and `manifest.json` into `models/`. Validation reports are included under `validation/`.
+The exporter reads the checkpoint configuration, strictly restores the original training weights, exports sparse top-1 expert dispatch and dynamic duration, and validates 3/6/10/7.13/30-second cases against the original model. Copy the verified `uss-original.onnx` and `manifest.json` into `models/`. Validation reports are included under `validation/`.
 
 Floating-point implementations can choose different experts when top probabilities tie. Such differences are explicitly counted in the export report with their reference probability gaps; displayed routes always come from the executed graph.
 
+## Weight provenance and size
+
+Only original training parameters are copied into the inference model. This checkpoint was saved during validation, so the exporter restores its saved `collected_params` training-parameter backup before export. The manifest records the source and parameter fingerprint. Training-state copies and optimizer state are not exported. `parameterCount` counts the original inference module's parameters once; `model.bytes` is the exact serialized ONNX size, including graph metadata and constant buffers. Parameter count and file size are separate measurements. The browser uses a hash-specific cache key and removes obsolete cached models for this demo when loading the current model.
+
 ## Validation for this release
 
-- Original PyTorch versus ONNX: 3, 6, 7.13 (offset 1.17), 10 and 30 seconds. Spectral SNR is 97-132 dB; all event selections agree. One of the 700 band selections in the 3-second case differs at an exact probability tie; all other tested TF selections agree. See [export report](validation/export.json).
-- Edge WASM: all five durations pass waveform comparison and exact event/TF route comparison against native ONNX Runtime. Upload length limits, interval controls, microphone recording, cancellation and responsive layouts pass. See [browser report](validation/browser-duration.json).
-- Results placement, synchronized playback, RMS balancing, peak protection and matching WAV downloads pass. See [results report](validation/results-presentation.json).
+The export, browser, results and single-thread reports in `validation/` describe the current original-weight model. Reference inference uses the same restored original training parameters. The default audio, 3-30-second controls, routing views, light theme, playback normalization and downloads are preserved.
 
-- Without cross-origin isolation (GitHub Pages conditions), a full 30-second input completes with one WASM thread and correct output lengths/event routing. This machine measured about 92 seconds for inference; browser and hardware performance varies. See [single-thread report](validation/single-thread-30s.json).
+The export writes a separate `uss-original.onnx` file and refuses to overwrite an existing export. The source checkpoint is read-only. Only the original-weight ONNX is tracked for deployment; previous local weights are retained outside the deployment file list.

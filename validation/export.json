@@ -1,32 +1,41 @@
 {
   "checkpointSha256": "b25cf5349f5e6fd6c5598b0120df7ac18c2417a517a9e3a1532d1f7846427d93",
+  "weightVariant": "original",
+  "weightProvenance": {
+    "source": "training-parameter-backup",
+    "parameterTensors": 3317,
+    "restoredTensors": 3317,
+    "changedTensors": 3195,
+    "parametersSha256": "c96d852435df7fd51d2b1e2b27ee3f0b7a3ea8555883f5547a3df1c148ab987f"
+  },
+  "parameterCount": 14692244,
   "cases": [
     {
       "seconds": 3,
       "start": 0,
       "frames": 101,
       "spectralError": {
-        "max_abs": 0.0008015632629394531,
-        "mean_abs": 1.6508967324594808e-06,
-        "snr_db": 97.05295574652308
+        "max_abs": 1.9073486328125e-05,
+        "mean_abs": 2.588394025131253e-08,
+        "snr_db": 133.12430041391937
       },
       "eventProbabilityError": {
-        "max_abs": 8.055567741394043e-05,
-        "mean_abs": 7.860879469219417e-06,
-        "snr_db": 77.8396022831179
+        "max_abs": 7.450580596923828e-07,
+        "mean_abs": 9.729549111354919e-08,
+        "snr_db": 116.7764231771059
       },
       "adaptedSpectralError": {
         "max_abs": 7.62939453125e-06,
-        "mean_abs": 1.1079767500210591e-09,
-        "snr_db": 143.21921889850938
+        "mean_abs": 1.0247326166297913e-09,
+        "snr_db": 144.50253309133493
       },
       "adaptedEventProbabilityError": {
         "max_abs": 0.0,
         "mean_abs": 0.0,
-        "snr_db": 280.694658394218
+        "snr_db": 280.70908247873973
       },
       "eventIdsMatch": true,
-      "tfIdsMatch": false,
+      "tfIdsMatch": true,
       "tfRouteComparison": {
         "frame": {
           "total": 707,
@@ -36,41 +45,36 @@
         },
         "band": {
           "total": 700,
-          "mismatches": 1,
-          "maxReferenceProbabilityGap": 0.0,
-          "examples": [
-            [
-              0,
-              92
-            ]
-          ]
+          "mismatches": 0,
+          "maxReferenceProbabilityGap": 0,
+          "examples": []
         }
       },
-      "runtimeSeconds": 2.212334892945364
+      "runtimeSeconds": 1.4735193536616862
     },
     {
       "seconds": 6,
       "start": 0,
       "frames": 201,
       "spectralError": {
-        "max_abs": 3.4332275390625e-05,
-        "mean_abs": 4.162884535804547e-08,
-        "snr_db": 130.84384768768024
+        "max_abs": 3.0517578125e-05,
+        "mean_abs": 3.9731524923817756e-08,
+        "snr_db": 131.40309855417206
       },
       "eventProbabilityError": {
-        "max_abs": 1.1622905731201172e-06,
-        "mean_abs": 1.4693553869922957e-07,
-        "snr_db": 113.50785765390816
+        "max_abs": 8.642673492431641e-07,
+        "mean_abs": 1.296104441973425e-07,
+        "snr_db": 115.00208434656156
       },
       "adaptedSpectralError": {
         "max_abs": 7.62939453125e-06,
-        "mean_abs": 1.9092047632924647e-09,
-        "snr_db": 144.53374722206837
+        "mean_abs": 2.1313775048128803e-09,
+        "snr_db": 143.69319008912152
       },
       "adaptedEventProbabilityError": {
         "max_abs": 0.0,
         "mean_abs": 0.0,
-        "snr_db": 281.0901465856477
+        "snr_db": 281.0993705147495
       },
       "eventIdsMatch": true,
       "tfIdsMatch": true,
@@ -88,31 +92,31 @@
           "examples": []
         }
       },
-      "runtimeSeconds": 4.028608734020963
+      "runtimeSeconds": 2.9540549870580435
     },
     {
       "seconds": 10,
       "start": 0,
       "frames": 334,
       "spectralError": {
-        "max_abs": 4.57763671875e-05,
-        "mean_abs": 3.9561324579561386e-08,
-        "snr_db": 129.14351692855942
+        "max_abs": 3.814697265625e-05,
+        "mean_abs": 4.03889179876953e-08,
+        "snr_db": 129.60832600251416
       },
       "eventProbabilityError": {
-        "max_abs": 1.6689300537109375e-06,
-        "mean_abs": 1.592450730857395e-07,
-        "snr_db": 111.60150555927689
+        "max_abs": 1.1473894119262695e-06,
+        "mean_abs": 1.6569780806700388e-07,
+        "snr_db": 112.24828925570515
       },
       "adaptedSpectralError": {
         "max_abs": 7.62939453125e-06,
-        "mean_abs": 1.6505718443443453e-09,
-        "snr_db": 143.94058767706105
+        "mean_abs": 1.62213148116949e-09,
+        "snr_db": 144.7236963423016
       },
       "adaptedEventProbabilityError": {
         "max_abs": 0.0,
         "mean_abs": 0.0,
-        "snr_db": 280.75985281179055
+        "snr_db": 280.8106209822883
       },
       "eventIdsMatch": true,
       "tfIdsMatch": true,
@@ -130,31 +134,31 @@
           "examples": []
         }
       },
-      "runtimeSeconds": 7.9573952769860625
+      "runtimeSeconds": 5.407388939987868
     },
     {
       "seconds": 7.13,
       "start": 1.17,
       "frames": 238,
       "spectralError": {
-        "max_abs": 2.288818359375e-05,
-        "mean_abs": 3.946433301949041e-08,
-        "snr_db": 131.78029342411287
+        "max_abs": 3.0517578125e-05,
+        "mean_abs": 4.126265015419516e-08,
+        "snr_db": 131.14387193569144
       },
       "eventProbabilityError": {
-        "max_abs": 1.2516975402832031e-06,
-        "mean_abs": 1.54194865553152e-07,
-        "snr_db": 113.02422032280214
+        "max_abs": 1.3113021850585938e-06,
+        "mean_abs": 1.481329534380209e-07,
+        "snr_db": 112.96707681332565
       },
       "adaptedSpectralError": {
-        "max_abs": 1.52587890625e-05,
-        "mean_abs": 1.8881467854756996e-09,
-        "snr_db": 144.42454117318698
+        "max_abs": 7.62939453125e-06,
+        "mean_abs": 1.8321384277268794e-09,
+        "snr_db": 144.8901576361815
       },
       "adaptedEventProbabilityError": {
         "max_abs": 0.0,
         "mean_abs": 0.0,
-        "snr_db": 280.79988373568057
+        "snr_db": 280.80673242575085
       },
       "eventIdsMatch": true,
       "tfIdsMatch": true,
@@ -172,40 +176,49 @@
           "examples": []
         }
       },
-      "runtimeSeconds": 5.2547027671243995
+      "runtimeSeconds": 3.5298165632411838
     },
     {
       "seconds": 30,
       "start": 0,
       "frames": 1001,
       "spectralError": {
-        "max_abs": 6.866455078125e-05,
-        "mean_abs": 6.682589955064374e-08,
-        "snr_db": 123.46523361280214
+        "max_abs": 0.006188392639160156,
+        "mean_abs": 3.5697771140270807e-07,
+        "snr_db": 101.09255344873908
       },
       "eventProbabilityError": {
-        "max_abs": 2.294778823852539e-06,
-        "mean_abs": 3.1240605970933326e-07,
-        "snr_db": 106.69075982521863
+        "max_abs": 6.22868537902832e-06,
+        "mean_abs": 8.31033546654951e-07,
+        "snr_db": 98.13646791250775
       },
       "adaptedSpectralError": {
-        "max_abs": 1.52587890625e-05,
-        "mean_abs": 1.5257190598256511e-09,
-        "snr_db": 144.7665562619116
+        "max_abs": 7.62939453125e-06,
+        "mean_abs": 1.5386953144535639e-09,
+        "snr_db": 144.42031963375524
       },
       "adaptedEventProbabilityError": {
         "max_abs": 0.0,
         "mean_abs": 0.0,
-        "snr_db": 280.85775389841837
+        "snr_db": 280.86758898455776
       },
       "eventIdsMatch": true,
-      "tfIdsMatch": true,
+      "tfIdsMatch": false,
       "tfRouteComparison": {
         "frame": {
           "total": 7007,
-          "mismatches": 0,
-          "maxReferenceProbabilityGap": 0,
-          "examples": []
+          "mismatches": 2,
+          "maxReferenceProbabilityGap": 0.0,
+          "examples": [
+            [
+              0,
+              317
+            ],
+            [
+              3,
+              52
+            ]
+          ]
         },
         "band": {
           "total": 700,
@@ -214,7 +227,7 @@
           "examples": []
         }
       },
-      "runtimeSeconds": 28.424261167878285
+      "runtimeSeconds": 22.872242296114564
     }
   ],
   "dynamicAxes": true,

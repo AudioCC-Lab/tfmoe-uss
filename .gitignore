@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Keep the previous local model file out of future deployments.
+/models/uss.onnx

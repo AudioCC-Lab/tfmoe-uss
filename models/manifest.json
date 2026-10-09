@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "modelId": "uss-moe-large-event-last-12experts-ema-fp32-dynamic",
+  "modelId": "uss-moe-large-event-last-12experts-original-fp32-dynamic",
   "model": {
-    "url": "uss.onnx",
+    "url": "uss-original.onnx",
     "bytes": 61989038,
-    "sha256": "9a96c9769e2d403a8e81297a62abb26794c4ac266814ad24b1fdc6bdb7e7cb22"
+    "sha256": "300c3a2d2c400f4456b0b857cc6928f9da700095dfc3723868f983d136a55499"
   },
   "sampleRate": 16000,
   "minSamples": 48000,
@@ -41,7 +41,16 @@
   "sources": 3,
   "bands": 100,
   "channels": 48,
-  "weightVariant": "EMA",
+  "weightVariant": "original",
+  "weightProvenance": {
+    "source": "training-parameter-backup",
+    "parameterTensors": 3317,
+    "restoredTensors": 3317,
+    "changedTensors": 3195,
+    "parametersSha256": "c96d852435df7fd51d2b1e2b27ee3f0b7a3ea8555883f5547a3df1c148ab987f"
+  },
+  "parameterCount": 14692244,
+  "parameterCountScope": "Inference model parameters; excludes training state and non-parameter buffers",
   "sharedExperts": null,
   "useGroupNorm": true,
   "checkpointEpoch": 23,
